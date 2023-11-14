@@ -1,0 +1,621 @@
+
+Next ={User interface + back end}
+
+User interface -React
+Back end
+  -REST API
+  -GraphQL API
+  -Along with database -sqli,primisa
+
+.................................................................................
+				Next js
+..................................................................................
+What is a Next?
+ Next is a flexible React framework that gives you building blocks to create fast web applications.
+
+Web Applications:
+.................
+
+What is web app?
+  Type of distributed app,deployed at server , accessed over network(internet) vi various network protocals like http,tcp,smtp...
+  
+  Web apps works based on request and response model.
+  Web apps are hosted on server called web server.
+
+Web server receives request , runs a program, that program returns response to the client.
+
+Reponse would be document.
+=>HTML
+ 
+other responses types
+XML,JSON,Documents,images,vidoes.........
+
+What is web and why it was created?
+
+  Tim Berners-Lee, a British scientist, invented the World Wide Web (WWW) in 1989, while working at CERN. The web was originally conceived and developed to meet the demand for automated information-sharing between scientists in universities and institutes around the world.
+
+The first Web browser is line mode web browser,launched in 1992.
+
+The first web server is NeXT computer
+
+The first web page , lanuched http://info.cern.ch/hypertext/WWW/TheProject.html
+
+Types of Web application:
+
+1.Static web applications - 1989 to 1995 (Now a days also people are building this type apps)
+   Hard coded html pages , prepared html pages  kept at webserver , the webserver will send those html pages to clients(browsers)
+
+2.Dynamic Content generation application(1996 to till date)
+  After 1995, many people thought that how we can use web for biz information system
+ how to share biz informations via internet.
+ Generally biz data is stored in databases , how to embed data base data into html pages
+
+ 1.web server need to talk to database
+ 2.web server need to prepare html pages based on database records
+ 3.Those information must be transported to web clients.
+
+Web server core design to get client request and send html response to the client.
+
+Along with web server, something was introduced called "Programming language runtime"
+
+The first run time was created based on "c" language called "CGI-comman Gate way interface" later instead of c language "PERL" language.
+
+3.Web services-1998 to till date
+ Rise of ECommerce, using internet and web how to exchange data between two biz organizations.
+ The existing html technology was not suitable to send and recive data because html is just user interface document language.
+ We need to data to be exechanged, thats where new data model was created called 'XML'
+xml based web apps called web services.
+
+soap protocal was created to transfer XML based documents "SOAP based webservices"
+
+After 2005 soap based web services, started failing due to mobile computing.
+
+New Web services  were designed called "RestFull Web services"
+
+Restfull web services were used to build any type of data formats like json,xml,pdf,html etc...
+
+
+4.Client side web apps called "Single Page Web Apps"(2007 to till date)
+
+Single page web apps are built using javascript at client side where as server side web services(REST apis) are used.
+
+SPA Tech stack:
+HTML 5,CSS 3, Javascript.
+Frameworks build based on SPA
+
+1.Angular js
+2.react
+3.vue js
+
+
+.....................................................................................
+			  React as SPA lib
+.....................................................................................
+
+Reactjs was created by facebook , in order to build SPA applications for browsers.
+
+Advantages of SPA:
+1.Pages are created  at client side, so server load is completly removed
+2.SPA reduces the lot of phsyical pages after deployment.
+3.Clear separations of concerns.
+
+Drawbacks of SPA:
+.................
+
+Pure client SPAs are problematic when the app is senstive to SEO and time-to concept
+This is because the browser will recive a large empty HTML page and has to wait until the javascript is loaded before rendering any thing.
+
+The brith of new Technology called  "SSR" -  Server Side Rendering:
+..................................................................................
+ I need SEO but at the same time, i want to use SPA as well.
+
+We provides first class api to "render"  an SPA app into HTML strings on the server.
+This allows server to send back already rendered HTML, allowing end users to see the content immediately while the javascript is being downloaded.
+
+This process is called "hydration", the app is compiled at server side and sent to the client which will be  interactive.
+
+
+SSR types:
+ =>Partil SSR 
+     We have SPA already, but only few pages(index.html) page is pre compiled at server and sent to client , from where client apps(spa) starts working.
+
+Generally React has api called "ReactDOMServer" using this api we have to render html page on node js(express/hapi)
+ 
+ =>Full SSR
+     Every thing is compiled at server side , where as client logics like api calls using ajax is done at client side once the app is rendered.
+
+=>Full Stack apps: =>Full SSR(Next.js)
+   Using react like apps are built using full stack apps=>Next js
+
+SSG/JAMStack: (Static Site Generation)
+............
+
+What is Jamstack?
+Jamstack is an architectural approach that decouples the web experience layer from data and business logic, improving flexibility, scalability, performance, and maintainability.
+
+Jamstack removes the need for business logic to dictate the web experience.
+
+Just sending HTML pages to the client without preparing htmls pages while requesting.
+
+SSR will prepare html at server side during "request-response  phase/cycle"
+
+Server side rendering can be done "ahead of time"-->SSG.This means we can pre render an entire application into HTML and serve them as static files.
+This improves site performance and makes deployment a lot simpiler we no longer need to dynamically render pages on request.
+
+.....................................................................................
+			   Next js  -SSR and SSG
+.....................................................................................
+
+Next js is full stack web framwork built on the top of react core features  to build modern SSG and SSR apps at very fast...
+
+Next js uses "rust based build system" where as react uses web pack build ....
+.......................................................................		
+Installing Next infrastructure:
+
+System Req:
+ ->Node js 16.8 or later
+ ->OS - it can be windows, mac or Linux are supported
+
+
+Two types of installation
+1.Automatic installation
+   Which setps everything automatically for you.
+
+npx create-next-app@latest
+
+
+
+E:\session\IBM\2023\Nov\NextJS>npx create-next-app@latest
+Need to install the following packages:
+create-next-app@14.0.2
+Ok to proceed? (y) y
+√ What is your project named? ... my-app
+√ Would you like to use TypeScript? ... No / Yes
+√ Would you like to use ESLint? ... No / Yes
+√ Would you like to use Tailwind CSS? ... No / Yes
+√ Would you like to use `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to customize the default import alias (@/*)? ... No / Yes
+Creating a new Next.js app in E:\session\IBM\2023\Nov\NextJS\my-app.
+
+Using npm.
+
+Initializing project with template: app
+
+
+Installing dependencies:
+- react
+- react-dom
+- next
+
+...................................................................................
+				Project Structure
+...................................................................................
+package.json
+{
+  "name": "my-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "next": "14.0.2"
+  }
+}
+
+
+scripts:
+ dev: runs next dev to start next.js in development mode
+ build: runs next build to build the application for production usage
+ start: runs next start to start a next apps in production mode.
+ lint: runs next lint to set up next built in eslint configuration.
+
+
+next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {}
+
+module.exports = nextConfig
+
+
+compiler configuration:
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+
+
+src/app
+  having basic start up files
+
+layout.js
+page.js
+   landing page is available inside layout.js
+
+public:
+  stores static assests such images,fonts,documents
+  public dir are accessed inside code using the base URL "/".
+
+How to start dev server
+
+ > npm run dev
+
+ Note: In Next js file names and folder names are conventinally configured.
+
+ In Nextjs file names  and folder names  play very important.
+
+....................................................................................
+			 Root File/Root Component
+.....................................................................................
+
+In react , there is index.html which is built in ready made file, inside that file only we create DOM tree and we insert
+
+index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>React App</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root">
+      
+    </div>
+  </body>
+</html>
+
+here div element is root container element.inside we create DOM tree and insert which is called SPA
+  HTML elements are created at client only.
+///////////////////////////////////////////////////////////////////////////////////////
+Where as SSR , index.html and other html files are created server side.
+
+How to create index.html in Next app?
+
+Since all server side frameworks, html files including root /landing page is created on fly by server runtime(next runtime/engine).
+
+In next js , all pages(html files) are written using "javascript".
+
+We are going to use  react  as primary programming structure to html pages. 
+
+React is component driven lib, so we need to follow the same pattern.
+
+We create components only. In next every thing is component. 
+
+But we have different types of components with respect to user interface .
+
+1.page 
+   Page represents  Userinterface like index.html,product.html,customer.html 
+
+2.layout 
+   Wrapper which wraps the page.
+
+Note:
+ Every Next js application must start with "root Layout".
+ you may have nested layout.
+
+ Props:
+ .....
+ What is prop?
+  Prop is way of configurable information to the UI 
+
+ Why prop?
+   Props makes UI more reusable .
+
+What can be prop?
+
+1.Data can be prop - string,numbers,boolean,objects,arrays
+2.function as prop 
+3.UI/component/element  as prop.
+
+<RootLayout>
+  <HomePage/>
+</RootLayout>
+.
+.....................................................................................
+			                      Pages & Routing
+.....................................................................................
+
+The core of next apps are routing.
+The skeleton of every app is routing.
+
+Pages:
+......
+  A page is UI that is unique to a route.
+  You can define pages by exporting a component from page.js file to make the route   publicly accessible
+  
+Create first Page by adding a page.js file inside app directory. -Home Page
+
+By default routing is enabled,automatically, unlike react spas you dont need to specify the routing.
+
+Note: in next js you dont need to configure any routers, routers are mapped against files and folders
+
+http://localhost:3000/  =>Root URL(route) => page.js
+
+  By default root path is mapped against page.js
+
+src/app/page.js
+
+export default function HomePage() {
+    return <h1>
+        Hello,Welcome to Next js
+    </h1>
+app/page.js  ----> /
+
+How to define new route and render accordingly?
+
+create a folder that maps to route automatically 
+
+
+app/about/page.js   => /about
+   
+export default function About(){
+    return <h1>About us</h1>
+}
+
+app/dashboard/page.js  ====> /dashboard
+
+
+export default function DashBoard() {
+    return <h1>Dashboard</h1>
+}
+
+app/dashboard/settings/page.js     ===> http://localhost:3000/dashboard/settings
+
+....................................................................................
+Routing core concepts
+....................................................................................
+
+Inside the app directory, folders are used to define routes.
+
+Each folder represents a "route segment" that maps to a "URL" segment. To create nested route, you can nest folders inside each other.
+
+	localhost:3000 /     dashboard /settings
+		       |            |              |
+		 Root segment     Segment     leaf Segment
+
+How to create segments(eiether root/segement/leaf)?
+  A special file called page.js to make route segments publicly accessible.
+
+if you different name other than page.js , it will not be avaible for public access.
+
+ app/dashboard/config/myconfig.js
+
+http://localhost:3000/dashboard/config/myconfig
+
+.....................................................................................
+			   Creating UI
+.....................................................................................
+
+Special file conventions are used to create UI for each route segment.
+
+File convention
+pages -  page.js
+layouts - layout.js
+routes   - route.js - server side end points
+templates  - template.js
+loading   ----loading.js
+errors    -----error.js,global-error.js,not-found.js 
+..............................................................................
+Roles of Folders and files:
+..........................
+
+1.folder are used to define routes. A route is a single path of nested folders, following the hierarchy from the the root folder down to a final leaf folder that includes a page.js file
+
+2.Files are used to create UI that is shown the route segment
+....................................................................................
+
+page.js :  create the unique UI of a route and make the path publicly accessible
+  -route.js : create server side apis/endpoints for a route
+
+layout.js:
+  Create shared UI for a segement and its children.
+  A layout wraps a page or child segement.
+ -template.js
+     Similar to layout.js execpt  a new component instance is mounted on navigation.
+loading.js
+   To show progress bar while loading ui, it uses reac Suspense boundary.
+ 
+error.js
+  to handle ui errors,internally it uses error boundary
+  ->global-errors.js 
+      catching errors in the layout layer level
+  ->not-found.js
+        this is shown when if there is no url segment matches...
+....................................................................................
+			   Component hierachy
+....................................................................................
+
+layout.js
+  Every next app must have one layout.js which define root layout.
+
+template.js
+   Templates are similar to layouts that wrapy each child layout or page.
+
+error.js 
+   React Error boundary - layout level errors
+
+ErrorBoundary:
+Error boundaries are React components that catch JavaScript errors anywhere in their child component tree, log those errors, and display a fallback UI instead of the component tree that crashed. Error boundaries catch errors during rendering.
+
+loading.js
+   Which loads component in async manner
+   Components render sync manner.
+Lazy loading:
+  load components in delayed manner
+React lazy loading is done via Suspense Component
+
+not-found.js :React Error Boundary
+    This is component used to handle errors during component load/page
+
+
+page.js or nestlayout layout.js
+   Actual UI is displayed
+
+Component Structure/Hierarchy:
+..............................
+
+<Layout>
+   <Template>
+	<ErrorBoundary fallback={<Error/>}>
+	   <Suspense fallback={<Loading/>}>
+		<ErrorBoundary fallback={<NotFound/>}
+		    <Page/>	
+		<ErrorBoundary>
+           <Suspense>	
+        </ErrorBoundary>
+   </Template>	
+</Layout>
+....................................................................................
+			Nested Route component Hierachy
+....................................................................................
+app/
+ page.js
+ layout.js
+ not-found.js
+ template.js
+ loading.js
+ error.js
+ 
+dashboard
+  -layout.js
+  -error.js
+  -loading.js
+  
+<Layout>
+    <ErrorBoundary fallback={<Error/>}>
+	  <Suspense fallback={<Loading/>}>
+		<ErrorBoundary fallback={<NotFound/>}
+		    <Page/>	
+		<ErrorBoundary>
+           <Suspense>	
+        </ErrorBoundary>
+   
+</Layout>
+
+app/
+ page.js
+ layout.js
+ not-found.js
+ template.js
+ loading.js
+ error.js
+ 
+dashboard
+  -layout.js
+  -error.js
+  -loading.js
+settings
+  -layout.js
+  -error.js
+  -loading.js
+  -page.js
+
+
+dashboard/settings
+  
+<Layout>
+    <ErrorBoundary fallback={<Error/>}>
+	  <Suspense fallback={<Loading/>}>
+	     <Layout> <!-- settings---!>
+		<ErrorBoundary fallback={<Error/>}>
+		    <Suspense fallback={<Loading/>}>
+			<Page/>
+		    </Suspense>
+		<ErrorBoundary>
+	     <Layout/>
+           <Suspense>	
+        </ErrorBoundary>
+   
+</Layout>
+
+...................................................................................
+   			 Linking and Navigation
+...................................................................................
+
+The Next.js router uses  "Server centric routing with client side navigation
+
+In old next versions there is pages dir which uses client side routing, the App router uses "server centric routing" to algin server components and data fetching on the server. with server centric routing, the client does not have to  download to route map and the request for compoentents can be use to look up routes.
+			
+Client side Navigation or client Routing:
+..........................................
+ The pages are transfered from one page to another page using hyper links or there are js apis like router.push method.
+ Client navigation done by the browser apis
+ Server side navigation done by the server
+			
+There are two types of components for naviation.
+
+1.Link compoenent - server side navigation
+2.useRouter Hook -client side navigation 
+
+Link Components
+Props
+ ->href -required
+ ->replace 
+ -prefetch
+ -shallow
+ -local
+
+
+	
+.......................................................................................
+                            Component Classification
+........................................................................................
+
+You can classifiy the compoents.
+
+1.infrastructure components
+   page,layouts,templates,errors,loading,notfound
+infra structure component must follow the rules like folder name and file name conventions.
+ eg 
+  src/app 
+    layout.js  - root layout 
+    page.js -> home page 
+  src/app/settings 
+     -layout.js  -settings layout 
+     -page.js - settings page 
+2.user components 
+  components which make up the ui like products list,productforms,review,payment.......
+......................................................................................
+                              Rendering 
+......................................................................................
+Rendering can take place on the server or on the client.
+It can happen either ahead of time at build time, 
+or on every request at runtime. 
+
+With Next. js, three types of rendering methods are available
+  
+1.Server-Side Rendering, 
+2.Static Site generation
+3.Client-Side Rendering.
+
+
+
+
+
+
+
+
+
