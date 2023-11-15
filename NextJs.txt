@@ -601,6 +601,9 @@ infra structure component must follow the rules like folder name and file name c
 ......................................................................................
                               Rendering 
 ......................................................................................
+
+Rendering is nothing but page prepartion (html creation)
+
 Rendering can take place on the server or on the client.
 It can happen either ahead of time at build time, 
 or on every request at runtime. 
@@ -609,7 +612,373 @@ With Next. js, three types of rendering methods are available
   
 1.Server-Side Rendering, 
 2.Static Site generation
+   2.1.ISR - Incremental static rendering = Build time + runtime
 3.Client-Side Rendering.
+
+Component types:
+ Based on Rendering we can classlify the components into two category
+
+ 1.Server components 
+    Components are rendered at server side 
+ 2.Client components 
+   Components are rendered at client side 
+
+   By default all components are "Server rendered Components".
+.......................................................................................
+                            Client Components
+.......................................................................................
+
+Co location:
+  Apart from the special files you can co-locate , other files such as components,css, test files within app folder or nested folder. 
+
+Create simple component and co locate 
+
+review/review.jsx 
+import { useState } from "react"
+
+export default function Review() {
+    const [like, setLike] = useState(0)
+
+    return <>
+        <h1>Review Component</h1>
+        <h2>Like  {like}</h2>
+    </>
+}
+
+After running/compiling , you get the following error.
+You're importing a component that needs useState. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+Learn more: https://nextjs.org/docs/getting-started/react-essentials
+
+   ╭─[E:\session\IBM\2023\Nov\NextJS\my-app\src\app\review\review.jsx:1:1]
+ 1 │ import { useState } from "react"
+   ·          ────────
+ 2 │ 
+ 3 │ export default function Review() {
+ 3 │     const [like, setLike] = useState(0)
+   ╰────
+
+Maybe one of these should be marked as a client entry with "use client":
+./src\app\review\review.jsx
+./src\app\review\page.js
+
+Why this error?
+  
+ Server not able render the above code, the reason is the code is subject browser rendering that means, client side rendering.
+
+
+in order to compile we need to use directive , called "use client"
+
+Solution:
+"use client"
+import { useState } from "react"
+
+export default function Review() {
+    const [like, setLike] = useState(0)
+
+    const onLike = () => {
+        console.log('onlike')
+        setLike(like + 1)
+    }
+    return <>
+        <h1>Review Component</h1>
+        <h2>Like  {like}</h2>
+        <button onClick={onLike}>Like</button>
+    </>
+}
+........................................................................................
+
+I have state like below .
+
+state which displays user information 
+
+const user  = {
+  id:1,
+  name:'Subramanian'
+  contact: {
+     address: {
+        city:'Pune'
+     }
+  }
+}
+
+Here when i click update button, i want to change city from 'Pune' to 'Coimbatore'
+
+Patterns:
+ 
+1.Server component uses client compoent
+2.Client uses another another client component
+3.Client uses Server component
+
+
+
+Server component uses client Component
+
+Client:
+review/review.jsx 
+"use client"
+import { useState } from "react"
+
+export default function Review() {
+    const [like, setLike] = useState(0)
+
+    const onLike = () => {
+        console.log('onlike')
+        setLike(like + 1)
+    }
+    return <>
+        <h1>Review Component</h1>
+        <h2>Like  {like}</h2>
+        <button onClick={onLike}>Like</button>
+    </>
+}
+Server: 
+review/page.js 
+import Review from "./review";
+
+export default function ReviewPage() {
+    console.log('Review page')
+    return <div>
+        <Review />
+    </div>
+}
+
+Client Uses another Server Component:
+
+if client uses server, server component becomes client so we loose the purpose of server side rendering. - not recommended
+
+Server:
+export default function Dislike() {
+    console.log('dislike')
+    return <h1>Dislike-Server Component</h1>
+}
+Client:
+"use client"
+import { useState } from "react"
+import Dislike from "./dislike"
+
+export default function Review() {
+    const [like, setLike] = useState(0)
+
+    const onLike = () => {
+        console.log('onlike')
+        setLike(like + 1)
+
+    }
+    return <>
+        <h1>Review Component</h1>
+        <h2>Like  {like}</h2>
+        <button onClick={onLike}>Like</button>
+        <hr />
+        {/* Using server component inside client component */}
+        <Dislike />
+    </>
+}
+....................................................................................
+What if client uses server but i dont want loose the server rendering feature -?
+
+  	Pass Server Component  to Client component as "props"
+
+<Client>
+	<Server/>
+</Client>
+
+client/page.js 
+import MyClient from "./myclient"
+import MyServer from "./myserver"
+
+export default function ClientPage() {
+    return <div>
+        <h1>Client Page</h1>
+        <MyClient>
+            {/* Here we pass server component as prop to child , so that we never loose the server rendering. */}
+            <MyServer />
+        </MyClient>
+    </div>
+
+}
+clinet/myclient.js 
+"use client"
+
+// import MyServer from "./myserver"
+
+export default function MyClient(props) {
+    return <div>
+        <h1>Client Component</h1>
+        {/* <MyServer /> */}
+        {props.children}
+    </div>
+}
+client/myserver.js 
+export default function MyServer() {
+    return <h1>
+        Server Component
+    </h1>
+}
+.......................................................................................
+
+Client uses another Client :
+..........................
+
+client/review.jsx 
+'use client'
+
+import Like from "./like"
+
+export default function Review() {
+    return <div>
+        <h1>Review Client</h1>
+        <Like/>
+    </div>
+}
+client/like.jsx 
+// 'use client'
+
+import { useState } from "react"
+
+export default function Like() {
+    const [like, setLike] = useState(0)
+    return <div>
+        <h2>{like}</h2>
+        <h1>Like Client</h1>
+    </div>
+}
+Here ,when client component uses another client component, we dont need to declare nested client with "use client" directive.
+but at the same if that client component is used within another server component , we have to declare 'use client' directive.
+
+Use case, when you migrate third party component's libs into Next echo system .
+......................................................................................
+                            Advanced Routing Patterns 
+.......................................................................................
+1.Dynamic routing:
+
+ if you want to build page accroding to dynamic parameter, we can use Dynamic routing pattern.
+
+ URL Pattern
+ http://localhost:3000/profile/2
+
+ src/app
+     |
+     profile
+      |
+      page.js 
+      layout.js 
+     [id]
+       |
+       page.js 
+       layout.js 
+  
+eg:
+src/app/blog/layout.js 
+
+export default function BlogLayout({ children }) {
+
+    return <div id="bloglayout">
+        {children}
+    </div>
+}
+src/app/blog/page.js 
+
+export default function BlogPage(props) {
+    return <h1>Blog Page</h1>
+}
+
+src/app/blog/[id]/layout.js 
+
+export default function BlogDetailsLayout({ children }) {
+
+    return <div id="blogDeails">
+        {children}
+    </div>
+}
+src/app/blog/[id]/page.js 
+// export default function BlogPage(props) {
+//     return <>
+//         <h1>Blog Details Page</h1>
+//         <h1>Blog Id {props.params.id}</h1>
+//     </>
+// }
+export default function BlogPage({ params: { id } }) {
+    return <>
+        <h1>Blog Details Page</h1>
+        <h1>Blog Id {id}</h1>
+    </>
+}
+Testing:
+ http://localhost:3000/blog/1
+ http://localhost:3000/blog/2
+ http://localhost:3000/blog/3
+ http://localhost:3000/blog/4
+////////////////////////////////////////////////////////////////////////////////////////
+                          Master details page 
+........................................................................................
+
+Master page contains list of items.
+Details page page contains information about particular list item. 
+
+Use case : building master page using mock data 
+
+Masterpage:
+src/app/todos/page.js
+
+import { TODOS } from "./todos-mock"
+import Link from "next/link"
+
+export default function TodosPage() {
+    return <div>
+        <ul>
+            {TODOS.map(todo => {
+                return <li>
+                    <Link href={`/todos/${todo.id}`}>{todo.title}</Link>
+                </li>
+            })}
+        </ul>
+    </div>
+}
+DetailsPage
+src/app/todos/[id]/page.js
+export default function TodoDetailsPage({ params: { id } }) {
+    return <>
+        <h1>Todo Details Page</h1>
+        <h1>Todo Id {id}</h1>
+    </>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+ 
+
+
+
+
+
+
+
 
 
 
