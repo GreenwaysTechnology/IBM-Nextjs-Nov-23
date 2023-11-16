@@ -942,6 +942,316 @@ export default function TodoDetailsPage({ params: { id } }) {
         <h1>Todo Id {id}</h1>
     </>
 }
+........................................................................................
+                         Catch All Segement Routing Pattern 
+.......................................................................................
+
+Dynamic segements can be extened to catch all subsequent segements by adding [...slug].
+
+eg:
+ shop
+  |
+  [...slug]
+    
+Url Pattern:
+ /shop/tops 
+ /shop/tops/tshirt
+ /shop/dress/men/shirt 
+
+ How to capture parameters ?
+ {
+  slug:['tops','tshirt','men','shirt']
+ }
+
+eg:
+ src/app/shop/page.js 
+ 
+export default function ShopPage(){
+    return <div>
+        <h1>Shop page</h1>
+    </div>
+}
+Testing :
+http://localhost:3000/shop 
+
+ src/app/shop/[...slug]/page.js 
+
+ export default function ShopSlugPage({ params }) {
+    return <div>
+        <h1>Shop Slug Page {JSON.stringify(params)}</h1>
+    </div>
+}
+Testing:
+http://localhost:3000/shop/cloths/tops/t-shirts
+
+Shop Slug Page {"slug":["cloths","tops","t-shirts"]}
+.....................................................................................
+                     Optional Catch All Routing Pattern
+.....................................................................................
+
+for eg :
+shop
+  |
+  [...slug]
+    |
+    page.js 
+|
+page.js 
+
+let us assume that , if you want to show, /shop, we need shop/page.js file.
+What if i dont want that file too.
+
+shop
+  |
+  [...slug]
+    |
+    page.js 
+
+Here shop/[...slug]/page.js if i want to reuse this page itself for rendering /shop url pattern too . We use "Optional Catch All Segment Routing Pattern"
+
+syntax:
+
+shop
+  |
+  [[...slug]]
+    |
+    page.js 
+
+eg:
+ shop
+  |
+  [[...slug]]
+     |
+     page.js 
+export default function ShopSlugPage({ params }) {
+    return <div>
+        <h1>Shop Slug Page {JSON.stringify(params)}</h1>
+    </div>
+}
+Testing:
+http://localhost:3000/shop 
+  => Shop Slug Page {}
+http://localhost:3000/shop/cloths/tops/t-shirts 
+
+  =>  Shop Slug Page {"slug":["cloths","tops","t-shirts"]}
+.......................................................................................
+                       Route Groups - Routing Pattern 
+.......................................................................................
+if you want to organize the project based on modules/folders but that folder you dont want map against url .
+Route Group helps to create such pattersn 
+
+Route groups are created by wrapping folder within paraenthis (YourDomain)
+
+
+Route Groups can be used to 
+
+-Organize routes without affecting the URL structure.
+-Opting-in specific route segement into a layout
+-Create multiple route layouts by spilting your apps
+
+eg:
+app
+ |
+(marketing)     market/sales or market/advt
+  market
+   sales
+      page.js
+  page.js
+   advt  
+      page.js 
+http://localhost:3000/market/sales 
+http://localhost:3000/market/advt 
+.......................................................................................
+                      Sharing layout for Route Groups 
+
+You can share layout for each group
+
+eg:
+app
+ |
+(marketing)     market/sales or market/advt
+  layout.js 
+  market
+   sales
+      page.js
+  page.js
+   advt  
+      page.js 
+http://localhost:3000/market/sales 
+http://localhost:3000/market/advt 
+  
+...................................................................................
+                       creating mutliple root layouts 
+....................................................................................
+
+To create multiple root layouts, remove the top-level layout.js file, and add a layout.js file inside each route groups. This is useful for partitioning an application into sections that have a completely different UI or experience. The <html> and <body> tags need to be added to each root layout.
+
+src/app/layout.js 
+  This layout can be renamed.
+
+Add layout under group:
+ src/app/(marketing)/layout.js
+
+ // export default function MarktingLayout({ children }) {
+//     return <div id="markinglayout">
+//         {children}
+//     </div>
+// }
+export default function MartingLayout({ children }) {
+    return <html lang="en">
+        <body>
+            <div>
+                <h1>Marketing - Advt</h1>
+                {children}
+            </div>
+        </body>
+    </html>
+}
+Note:
+ if you plan your app entirely with route group, you can remove root layout.js file  
+ if you mix routegroup and without routegroup, root layout file is needed.
+....................................................................................
+                            Parallel Routing 
+
+  Parallel Routing allows you to simultaneously or conditionally render one or more pages in the same layout.For highly dynamic sections of an app, such as dashboards and feeds on social sites, Parallel Routing can be used to implement complex routing patterns.
+
+  As of now , we have seen within layout, we have rendered only one page .
+
+Component View:
+  <Layout>
+       <Page/>
+  </Layout>
+This is default arch .
+
+What if i want to display, multiple pages within layout like below
+  <Layout>
+       <Page/>
+       <Page/>
+  </Layout>
+
+What if i want to display, page conditionally using conditional rendering.
+
+  <Layout>
+        condition ? <ThisPage> : <ThatPage>
+       
+  </Layout>
+
+Basic structure:
+
+src/app 
+    |
+    layout.js - root layout 
+    page.js  - root page 
+  |
+  info 
+    |
+    layout.js    ->info layout 
+    page.js      ->info page 
+
+Here , only info page is inserted into info layout.
+now i want to display two pages called team , and analytics within info layout.
+
+
+Steps:
+
+1.create folder called game
+src/app/game
+2.create page.js and layout.js
+
+src/app/game/layout.js 
+export default function GameLayout(props) {
+    return <div id="gamelayout">
+         {props.children}
+    </div>
+}
+src/app/game/page.js 
+export default function GamePage(props) {
+    return <div>
+        <h1>Game Page</h1>
+    </div>
+}
+3.in order to implement parallel routing, we need to create folder
+
+@folderName
+  |
+  page.js
+  layout.js 
+src/app/game/@team/page.js
+export default function TeamPage(props) {
+    return <h2>
+        Team Page
+    </h2>
+}
+Now if you test 
+http://localhost:3000/game/team
+The output would be page not found, the reason is you cant access team page publicly, 
+Team page must be injected into Team's layout as prop.
+
+src/app/game/@anaylitics/page.js
+export default function AnalyticsPage(props) {
+    return <h2>
+        Analytics  Page
+    </h2>
+}
+
+Update GameLayout:
+export default function GameLayout(props) {
+    return <div id="gamelayout">
+        {/* Game Page  */}
+        {props.children}
+        <hr />
+        {/* Team Page  props.folderName */}
+        {props.team}
+        {/* Analytics Page props.folderName */}
+        {props.anaylitics}
+    </div>
+}
+Component View:
+
+ <GameLayout>
+        </GamePage>
+        <TeamPage>
+        <AnalyticsPage/>
+ </GameLayout>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -19,4 +19,7 @@ export default function RootLayout({ children }) {
       </div>
     </body>
   </html>
+  // return <div>
+  //     {children}
+  // </div>
 }
