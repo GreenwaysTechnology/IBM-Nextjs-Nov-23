@@ -1213,44 +1213,411 @@ Component View:
         <TeamPage>
         <AnalyticsPage/>
  </GameLayout>
+......................................................................................
+.....................................................................................
+				Conditional Rendering-Parallel Routing
+.....................................................................................
+
+As of now, we have seen how to render multiple pages into a layout.
+Now we are going to discuss how to render page or pages into a layout based on condition.
+Slot  means portion of UI.
+We render a slot based on certain conditions, such as checkbox values,authentication states.
+
+Syntax:
+@AdminPanel
+@UserPanel
+
+export default function MyLayout(props) {
+  const isAdmin = getUser()
+   
+  return isAdmin ? props.AdminPanel : props.UserPanel
+
+}
+eg:
+
+src/app/panel/page.js
+export default function PanelPage(props) {
+    return <div>
+          <h1>Panel Page</h1>
+    </div>
+}
+
+src/app/panel/@AdminPanel/page.js
+export default function AdminPanelPage(props) {
+    return <div>
+          <h1>AdminPanelPage</h1>
+    </div>
+}
 
 
+src/app/panel/@UserPanel/page.js
+export default function UserPanelPage(props) {
+    return <div>
+          <h1>UserPanelPage</h1>
+    </div>
+}
+
+src/app/panel/layout.js
+
+export default function PanelLayout(props) {
+    const isAdmin = false 
+    return <div>
+         {props.children}
+         {isAdmin ? props.AdminPanel : props.UserPanel}
+    </div>
+}
+src/app/panel/page.js
+export default function PanelPage(props) {
+    return <div>
+          <h1>Panel Page</h1>
+    </div>
+}
+
+Points:
+ Parallel routes are created using named slots.
+ Slots are defined with the @folderName convention
+ Slots are passed as prop to the layout
+.......................................................................................
+                            Fallback - Unmatched route 
+......................................................................................
+
+if you request a route, each route is mapped against page.js, if Unmatched route,means there would not be page.js , instead of throwing 404 page not found error page, we can show "Default page or fallback page which is alternate page"
+
+fallback page can be created at any route level.
+
+src/app
+    |
+    default.js 
+or 
+
+src/app/dashboard 
+    |
+    settings 
+      |
+      page.js 
+  default.js 
+
+export default function DefaultPage() {
+    return <h1>
+        Hello
+    </h1>
+}
+.....................................................................................
+                          Data fetching 
+......................................................................................
+
+Data fetching is nothing but talking to apis particulary REST API OR GraphQL 
+
+Next app can fetch data either from external end points or internal end points, next provides a feature to build rest apis.
+
+Page can talk directly to External api 
+Next Page---------------------->External API 
+
+Page can talk to NEXT API which intern calls External API 
+Next Page-------------|NEXT API-------->External API 
+
+Page can talk to NEXT API Which talks to databases 
+Next Page-------------|NEXT API-------->Databases 
+.................................
+
+Fetching Data on the Server:
+
+=>Whenever possible, we recommend fetching data on the server. This allows you to:
+
+=>Have direct access to backend data resources (e.g. databases).
+
+=>Keep your application more secure by preventing sensitive information, such as access tokens and API keys, from being exposed to the client.
+
+=>Fetch data and render in the same environment. This reduces both the back-and-forth communication between client and server, as well as the work on the main thread on the client.
+=>Perform multiple data fetches with single round-trip instead of multiple individual requests on the client.
+=>Reduce client-server waterfalls.
+=>Depending on your region, data fetching can also happen closer to your data source, reducing latency and improving performance.
+
+Fetching Data Where It's Needed:
+
+If you need to use the same data (e.g. current user) in multiple components in a tree, you do not have to fetch data globally, nor forward props between components. Instead, you can use fetch or React cache in the component that needs the data without worrying about the performance implications of making multiple requests for the same data.
 
 
+Data fetching patterns:
+1.On the server, with fetch
+2.On the server, with third-party libraries
+3.On the client, via a Route Handler
+4.On the client, with third-party libraries.
 
 
+Fetching Data on the Server with fetch:
+.......................................
+
+Next.js extends the native "fetch" Web API to allow you to configure the caching and revalidating behavior for each fetch request on the server.
+React extends fetch to automatically memoize fetch requests while rendering a React component tree.
+
+You can use fetch with async/await in Server Components, in Route Handlers, and in Server Actions.
+
+Eg:
+
+src/app/todos/page.js 
+
+import Link from "next/link"
+
+async function fetchTodos() {
+    const url = `https://jsonplaceholder.typicode.com/todos`
+    const response = await fetch(url)
+    console.log('fetching...')
+    return response.json()
+}
+
+export default async function TodosPage() {
+    const todos = await fetchTodos()
+    return <ul>
+        {todos.map(todo => {
+            return <>
+                <li>
+                    <Link href={`/todos/${todo.id}`}>{todo.title}</Link>
+                </li>
+
+            </>
+        })}
+    </ul>
+
+}
+Task:
+Build detail page by fetching todo data from server .
+/src/app/todos/[id]/page.js 
+
+export default function TodoPage(props) {
+    return <div>
+        <h1>Todo Id: {props.params.id}</h1>
+    </div>
+}
+.......................................................................................
+                          SSG  - Static Site Generation
+.......................................................................................
+
+What is SSG ?
+  SSG is type of page rendering.
+page can be rendered during request time(SSR) or build time(SSG), build and SSR (ISR)
+
+How to implement SSG ?
+
+Step 1: 
+override generateStaticParams
+  The generateStaticParams function can be used in combination with dynamic route   segments to statically generate routes at build time instead of on-demand at request time.
+
+todos/[id]/page.js 
+
+URL: http://localhost:3000/todos/1 
+  When you hit this url , server prepares page when hit the page - Request time .
+
+What if i want access the page, before i hit. page must have been prepared already and kept in server - SSG 
+
+Step: 
+Note: SSG pages only served in prod mode 
+ npm run build 
+ npm start 
+
+eg:
+
+MasterPage:
+
+src/app/todos/page.js
+
+import Link from "next/link"
+
+async function fetchTodos() {
+    const url = `https://jsonplaceholder.typicode.com/todos`
+    const response = await fetch(url)
+    console.log('fetching...')
+    return response.json()
+}
+
+export default async function TodosPage() {
+    //SSR
+    const todos = await fetchTodos()
+    return <ul>
+        {todos.map(todo => {
+            return <>
+                <li>
+                    <Link href={`/todos/${todo.id}`}>{todo.title}</Link>
+                </li>
+
+            </>
+        })}
+    </ul>
+
+}
+
+Details Page where we have to write SSG logic 
+
+src/app/todos/[id]/page.js
+export default function TodoPage(props) {
+    return <div>
+        <h1>Todo Id: {props.params.id}</h1>
+    </div>
+}
+
+async function fetchTodos() {
+    const url = `https://jsonplaceholder.typicode.com/todos`
+    const response = await fetch(url)
+    console.log('fetching...')
+    return response.json()
+}
+//build time page creation.
+export async function generateStaticParams() {
+    console.log('building')
+    const todos = await fetchTodos()
+    return todos.map(todo => {
+        let id = todo.id.toString()
+        return {
+            id: id
+        }
+    })
+}
+
+Starting building:
+npm run build
+
+npm run build
+
+> data-fetching@0.1.0 build
+> next build
+
+   ▲ Next.js 14.0.3
+
+ ✓ Creating an optimized production build
+ ✓ Compiled successfully
+ ✓ Linting and checking validity of types
+   Collecting page data  ...building
+fetching...
+ ✓ Collecting page data
+   Generating static pages (22/206) [=== ]
+fetching...
+ ✓ Generating static pages (206/206)
+ ✓ Collecting build traces
+ ✓ Finalizing page optimization
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    139 B            84 kB
+├ ○ /_not-found                          876 B          84.7 kB
+├ ○ /todos                               6.91 kB        90.8 kB
+└ ● /todos/[id]                          140 B            84 kB
+    ├ /todos/1
+    ├ /todos/2
+    ├ /todos/3
+    └ [+197 more paths]
++ First Load JS shared by all            83.9 kB
+  ├ chunks/472-b67f79dbdd2c1fe1.js       28.7 kB
+  ├ chunks/fd9d1056-7b52db27cfdaff1f.js  53.3 kB
+  ├ chunks/main-app-25cf34c8082530c3.js  219 B
+  └ chunks/webpack-d9f8a4f0dd52fadf.js   1.64 kB
 
 
+○  (Static)  prerendered as static content
+●  (SSG)     prerendered as static HTML (uses getStaticProps)
+.......................................................................................
+                          Client Side Data Fetching
 
+Patterns:
 
+1.using "fetch" api 
+2.using "third party" api  - axios
 
+1.Fetching Data on the Client with Route Handlers(built in api)
+..................................................
 
+  If you need to fetch data in a client component, you can call a Route Handler from the client. 
+  Route Handlers execute on the server and return the data to the client. This is useful when you don't want to expose sensitive information to the client, such as API tokens.
 
+2.Fetching Data on the client without Route Handler 
 
+If you need to fetch data in a client component, you dont need call a Route Handler from the client. 
+ 
+3.Fetching Data on the Client with third-party libraries:
 
+You can also fetch data on the client using a third-party library such as SWR or React Query
 
+Eg: 
+Client component using fetch directly:
+......................................
 
+src/app/user/page.js 
+import User from "./user"
+export default function UsersPage() {
+    return <div>
+        <h1>Users Page</h1>
+        <User></User>
+    </div>
+}
+//client component 
+src/app/user/user.jsx 
 
+'use client';
+async function getUsers() {
+    const url = `https://jsonplaceholder.typicode.com/users`
+    const res = await fetch(url)
+    if (!res.ok) {
+        throw new Error('data is not available')
+    }
+    return res.json()
+}
+export default async function User() {
+    const users = await getUsers()
+    console.log(users)
+    return <div>
+        <h1>User</h1>
+        <div>
+            {users.map(user => {
+                return <h2>{user.username}</h2>
+            })}
+        </div>
+    </div>
+}
 
+Client with thrid party like axios :
+steps:
+1.just install third party libs like npm install axios 
+2.you can use axios function to invoke apis .
 
+Note:
+ Whether you are using fetch or axios , the call is not cached , we need to enable cache 
+There are many ways ,react 18 provides cache function , you can use that function but still in experimental mode .
+you can wrap code in thrid party libs like "SWR" - Stale-While-invalidate
 
+steps:
+npm install swr 
 
+src/app/posts/post.jsx 
 
+'use client'
+import useSWR from 'swr'
 
+function fetcher(...args) {
+    return fetch(...args).then(res => res.json())
+}
+export default function Post() {
+    const url = 'https://jsonplaceholder.typicode.com/posts'
+    const { data, error, isLoading } = useSWR(url, fetcher)
+    if (error) {
+        return <div><h1>Failed to return</h1></div>
+    }
+    if (isLoading) return <div>Loading....</div>
+    return <div>
+        {
+            data.map(post => {
+                return <h4>
+                    {post.title}
+                </h4>
+            })
+        }
+    </div>
+}
+src/app/posts/page.js
+import Post from "./post";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+export default function PostPage() {
+    return <div>
+        <Post></Post>
+    </div>
+}
 
 
 
