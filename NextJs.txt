@@ -1618,6 +1618,227 @@ export default function PostPage() {
         <Post></Post>
     </div>
 }
+......................................................................................
+                            REST API Development 
+
+1.Building Rest api with mock data 
+2.Building Rest api with external end points 
+3.Building Rest api with database .
+
+
+route.js is conventional file name for creating rest api .
+
+src/app/api/route.js 
+src/app/api/customers/route.js 
+   POST,GET 
+src/app/api/customers/[id]/route.js 
+GET -  GetInformation by id 
+PUT - Update By id 
+DELETE -Delete by Id 
+
+
+route.js
+  Inside route.js we write route handlers.
+
+export async function HTTPVerb(request){}
+
+eg:
+export async function GET(request){}
+
+Supported HTTP Verb:
+ GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS
+if un supported method is called, Next js will return a 405 method not allowed response.
+
+Object supported:
+1.NextRequest  for handling incoming request
+2.NextResponse for handling responses
+
+
+eg:
+src/app/api/route.js 
+import { NextResponse } from "next/server";
+
+//rest api
+export async function GET(request) {
+    //send response
+    return NextResponse.json({ message: 'welcome to api' })
+}
+
+Testing:
+http://localhost:3000/api 
+.......................................................................................
+Rest API with local mock data:
+
+src/app/api/todos/route.js
+
+import { TODOS } from "./todos";
+import { NextResponse } from "next/server";
+
+//GET ALL 
+export async function GET(request) {
+    //send response
+    return NextResponse.json(TODOS)
+}
+
+//POST operation
+export async function POST(request, { params }) {
+    // console.log(request)
+    const payload = await request.json()
+    console.log(payload)
+    return NextResponse.json({ message: 'post request' })
+}
+
+src/app/api/todos/[id]/route.js 
+import { NextResponse } from "next/server";
+import { TODOS } from "../todos";
+
+//GET by id 
+export async function GET(request, { params }) {
+    //send response
+    console.log(params)
+    const id = params.id
+    const todo = TODOS.filter(todo => todo.id === +id)
+    return NextResponse.json(todo)
+}
+//Update by id :Todo you can add array update logic 
+export async function PUT(request, { params }) {
+    const id = params.id
+    return NextResponse.json({ id: 'add update logic here' })
+}
+
+
+//remove by id :Todo you can write array remove logic 
+export async function DELETE(request, { params }) {
+    //send response
+    const id = params.id
+    return NextResponse.json({ id: 'add delete logic here' })
+}
+.....................................................................................
+                Building rest api which consumes third party apis 
+.....................................................................................
+
+NexApp----UserInterface----------api(routers)----------------->third party api
+
+Note:
+ If you are going to talk to third party rest api within route handler use always "fetch" api 
+
+ src/app/api/albums/route.js 
+ import { NextResponse } from "next/server";
+
+//rest api
+export async function GET(request) {
+    //use fetch api to talk to rest end points
+    const url = 'https://jsonplaceholder.typicode.com/albums'
+    const res = await fetch(url)
+    const albums = await res.json();
+    //send response
+    return NextResponse.json(albums)
+}
+....................................................................................
+    			How to externalize the data
+.....................................................................................
+
+In the above example we have hardcoded the full url
+
+const url = 'https://jsonplaceholder.typicode.com/albums'
+
+How to externalize the config data....
+
+We have file called ".env" file
+
+....................................................................................
+			  Environment Variables
+....................................................................................
+
+Next js comes with built in support for environment variables, which allows you make to your app more flexible.
+
+.env file syntax
+
+.env.environment
+
+.environment is "dev | prod | test"
+
+.env.development
+.env.production
+.env.test
+.env.local
+
+src/app/api/albums/route.js 
+
+import { NextResponse } from "next/server";
+
+const url = `${process.env.HOST}/albums`
+
+//rest api
+export async function GET(request) {
+    //use fetch api to talk to rest end points
+    //const url = 'https://jsonplaceholder.typicode.com/albums'
+    const res = await fetch(url)
+    const albums = await res.json();
+    //send response
+    return NextResponse.json(albums)
+}
+export async function POST(request) {
+    const album = await request.json()
+    //post data to json place holder api
+    const res = await fetch(url, {
+        method: 'POST', headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(album)
+    })
+    //send response
+    const newAlbum = await res.json();
+    return NextResponse.json(newAlbum)
+}
+
+src/app/api/albums/[id]/route.js 
+import { NextResponse } from "next/server";
+
+const url = `${process.env.HOST}/albums`
+
+export async function GET(request, { params }) {
+    const id = params.id
+    const res = await fetch(`${url}/${id}`)
+    const album = await res.json();
+    //send response
+    return NextResponse.json(album)
+}
+
+export async function PUT(request, { params }) {
+    const { title } = await request.json()
+    const id = params.id
+    const res = await fetch(`${url}/${id}`, {
+        method: 'PUT', headers: {
+            'Content-Type': 'application/json'
+            , body: {
+                //id, userId, title
+                //title: title
+                title
+            }
+        }
+    })
+    //send response
+    const updatedAlbum = await res.json()
+    return NextResponse.json(updatedAlbum)
+}
+
+export async function DELETE(request, { params }) {
+    const id = params.id
+    const res = await fetch(`${url}/${id}`, {
+        method: 'DELETE'
+    })
+    //send response
+    const deletedAlbum = await res.json()
+    return NextResponse.json(deletedAlbum)
+}
+......................................................................................
+                
+
+
+
+
+
 
 
 
