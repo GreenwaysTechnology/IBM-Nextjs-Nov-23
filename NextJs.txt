@@ -1833,7 +1833,272 @@ export async function DELETE(request, { params }) {
     return NextResponse.json(deletedAlbum)
 }
 ......................................................................................
-                
+                            Database Integration 
+......................................................................................
+
+Next js can integrate any database including sql and nosql.
+in order to talk to the database we need database drivers and apis.
+Mostly we recommend using database frameworks called "ORM" - Object Relational Mapping frameworks 
+
+For node js , we have many frameworks 
+1.Prisma
+2.Sequelize
+3.Type ORM 
+etc ...
+
+We are going to use "Prisma"
+
+Steps:
+1.install Prisma framework 
+2.configure Prisma
+3.CURD operation within routers 
+
+1.install Prisma
+>npx prisma init --datasource-provider sqlite
+Need to install the following packages:
+prisma@5.6.0
+Ok to proceed? (y) y
+                                                                                                                    (✔ Your Prisma schema was created at prisma/schema.prisma
+  You can now open it in your favorite editor.
+
+warn You already have a .gitignore file. Don't forget to add `.env` in it to not commit any private information.
+
+Next steps:
+1. Set the DATABASE_URL in the .env file to point to your existing database. If your database has no tables yet, read https://pris.ly/d/getting-started
+2. Run npx prisma db pull to turn your database schema into a Prisma schema.
+3. Run npx prisma generate to generate the Prisma Client. You can then start querying your database.
+.......................................................................................
+ORM fundamentals:
+
+Object Relational               Mapping 
+ |         |                     |
+Entity  (Relational Database)   binding 
+
+In Database program, we use sql queries for creating,inserting,updating,delete 
+
+IN ORM world, sql queries are abstracted by apis like save,findAll,findById,remove,update 
+Entity represents "table".
+
+In Prisma Entity is called as "Model".
+
+schema:
+ The plan or structure.
+
+Defining models:
+model Comment {
+  // Fields
+}
+
+model Tag {
+  // Fields
+}
+
+Fields:
+model Comment {
+  id      Int    @id @default(autoincrement())
+  title   String
+  content String
+}
+
+model Tag {
+  name String @id
+}
+eg:
+prisma/schema.prima 
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Define database model
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  role      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+.............
+npx prisma migrate dev --name init
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": SQLite database "dev.db" at "file:./dev.db"
+
+SQLite database dev.db created at file:./dev.db
+
+Applying migration `20231120071208_init`
+
+The following migration(s) have been created and applied from new schema changes:
+
+migrations/
+  └─ 20231120071208_init/
+    └─ migration.sql
+
+Your database is now in sync with your schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+
+added 2 packages, and audited 25 packages in 3s
+
+3 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+added 2 packages, and audited 27 packages in 24s
+
+3 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+✔ Generated Prisma Client (v5.6.0) to .\node_modules\@prisma\client in 61ms
+
+After running, you will able to see the table structure:
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "role" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+.....................................................................................
+                            seeding database 
+
+While app starts, if you want to insert some data , for testing, you can seed database.
+This step is not required, which is optional.
+
+prisma/seed.mjs 
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+async function main() {
+    const user = await prisma.user.upsert({
+        where: { email: "admin@admin.com" },
+        update: {},
+        create: {
+            name: "Admin",
+            email: "admin@admin.com",
+            role: "admin",
+        },
+    });
+
+    console.log({ user });
+}
+
+main()
+    .then(() => prisma.$disconnect())
+    .catch(async (e) => {
+        console.error(e);
+        await prisma.$disconnect();
+        process.exit();
+    });
+
+package.json
+{
+  "name": "db-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.6.0",
+    "next": "14.0.3",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "prisma": "^5.6.0"
+  }
+}
+npx prisma db seed
+Environment variables loaded from .env
+Running seed command `node prisma/seed.mjs` ...
+{
+  user: {
+    id: 'b6d894ce-19f6-43a2-ac77-9b3d10e293f4',
+    name: 'Admin',
+    email: 'admin@admin.com',
+    role: 'admin',
+    createdAt: 2023-11-20T07:30:13.805Z,
+    updatedAt: 2023-11-20T07:30:13.805Z
+  }
+}
+
+The seed command has been executed.
+
+src/lib/prisma.js 
+
+import { PrismaClient } from "@prisma/client";
+const globalForPrisma = global;
+export const prisma = globalForPrisma.prisma ||
+    new PrismaClient({
+        log: ["query"],
+    });
+....................................................................................
+                         Rest api with Prisma 
+....................................................................................
+src/app/api/users/route.js 
+import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+
+export async function GET(request) {
+    const user = await prisma.user.findMany({});
+    if (!user) {
+        return new NextResponse("No users");
+    }
+    return NextResponse.json(user);
+}
+export async function POST(request) {
+    try {
+        const json = await request.json();
+        const user = await prisma.user.create({
+            data: json,
+        });
+        return new NextResponse(JSON.stringify(user), {
+            status: 201,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+    catch (error) {
+        if (error.code === "P2002") {
+            return new NextResponse("User with email already exists", {
+                status: 409,
+            });
+        }
+        return new NextResponse(error.message, { status: 500 });
+    }
+}
+
+
+
+
+
+
+
 
 
 
