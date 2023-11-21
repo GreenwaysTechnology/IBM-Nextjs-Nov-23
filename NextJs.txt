@@ -128,7 +128,7 @@ Generally React has api called "ReactDOMServer" using this api we have to render
    Using react like apps are built using full stack apps=>Next js
 
 SSG/JAMStack: (Static Site Generation)
-............
+......................................
 
 What is Jamstack?
 Jamstack is an architectural approach that decouples the web experience layer from data and business logic, improving flexibility, scalability, performance, and maintainability.
@@ -2092,6 +2092,153 @@ export async function POST(request) {
         return new NextResponse(error.message, { status: 500 });
     }
 }
+GETBYID,Update,delete 
+src/app/user/[id]/route.js 
+
+import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+//GET BY id 
+export async function GET(request, { params }) {
+    const id = params.id;
+    console.log(id)
+    const user = await prisma.user.findUnique({
+        where: {
+            id,
+        },
+    });
+    if (!user) {
+        return new NextResponse("No user with ID found", { status: 404 });
+    }
+    return NextResponse.json(user);
+}
+//Update by id
+
+export async function PATCH(request, { params }) {
+    const id = params.id;
+    let json = await request.json();
+    const updated_user = await prisma.user.update({
+        where: { id },
+        data: json,
+    });
+    if (!updated_user) {
+        return new NextResponse("No user with ID found", { status: 404 });
+    }
+    return NextResponse.json(updated_user);
+}
+//remove by id 
+export async function DELETE(request, { params }) {
+    try {
+        const id = params.id;
+        await prisma.user.delete({
+            where: { id },
+        });
+        return new NextResponse(null, { status: 204 });
+    }
+    catch (error) {
+        if (error.code === "P2025") {
+            return new NextResponse("No user with ID found", { status: 404 });
+        }
+        return new NextResponse(error.message, { status: 500 });
+    }
+}
+//////////////////////////////////////////////////////////////////////////////////////
+                         Caching and ISR 
+
+How to enable data cache? 
+
+in order to implement we use api which returns current local time, so that we can easily understand how caching is working. 
+Api:
+ "http://worldtimeapi.org/api/timezone/Asia/Kolkata"
+
+src/app/timecache/[city]/route.js 
+
+By default next js caches fetch calls, if you opt out no cache.
+
+Without cache:
+
+src/app/timecache/[city]/route.js 
+
+export default async function CachePage(props) {
+    const response = await fetch('http://worldtimeapi.org/api/timezone/Asia/Kolkata', { cache: 'no-store' })
+    const data = await response.json();
+    return <>
+        <h1>Time Now : {new Date(data.datetime).toLocaleTimeString()} </h1>
+    </>
+}
+
+Testing:
+http://localhost:3000/timecache/Kolkata
+Refresh the browser , see that time is keep on updating, because we have disabled cache.
+
+With Cache - Full cache is enabled:
+src/app/timecache/[city]/route.js 
+
+export default async function CachePage(props) {
+    const response = await fetch('http://worldtimeapi.org/api/timezone/Asia/Kolkata')
+    const data = await response.json();
+    return <>
+        <h1>Time Now : {new Date(data.datetime).toLocaleTimeString()} </h1>
+    </>
+}
+How to revalidate?
+
+Time Based Revalidation:
+
+1.Configuration as part of fetch api.
+
+src/app/timecache/[city]/route.js 
+
+export default async function CachePage(props) {
+const response = await fetch('http://worldtimeapi.org/api/timezone/Asia/Kolkata', { next: { revalidate: 2 } })
+    const data = await response.json();
+    return <>
+        <h1>Time Now : {new Date(data.datetime).toLocaleTimeString()} </h1>
+    </>
+}
+
+2.Configuration as part of page vig "Route Segment config"
+
+src/app/timecache/[city]/route.js 
+
+export const revalidate = 2
+export default async function CachePage(props) {
+ const response = await fetch('http://worldtimeapi.org/api/timezone/Asia/Kolkata')
+    const data = await response.json();
+    return <>
+        <h1>Time Now : {new Date(data.datetime).toLocaleTimeString()} </h1>
+    </>
+}
+
+OnDemand Revalidation:
+......................
+
+Steps:
+1.You have to write rest api , which revalidates cache 
+1.1.You can path 
+1.2.You can use tag 
+
+src/app/api/revalidate/route.js 
+
+import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath, revalidateTag } from 'next/cache';
+
+export async function GET(request) {
+    const path = request.nextUrl.searchParams.get('path') || '/timecache/[city]';
+    const collection =
+        request.nextUrl.searchParams.get('collection') || 'collection';
+    revalidatePath(path);
+    revalidateTag(collection);
+    console.log('revalidated', path, collection);
+    // console.log('revalidated', path);
+    return NextResponse.json({
+        revalidated: true,
+        now: Date.now(),
+        cache: 'no-store',
+    });
+}
+http://localhost:3000/revalidate
+
+
 
 
 

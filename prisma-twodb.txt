@@ -1,0 +1,152 @@
+yarn add prisma --dev
+npx prisma init
+
+✔ Your Prisma schema was created at prisma/schema.prisma
+  You can now open it in your favorite editor.
+
+warn You already have a .gitignore file. Don't forget to add `.env` in it to not commit any private information.
+
+Next steps:
+1. Set the DATABASE_URL in the .env file to point to your existing database. If your database has no tables yet, read https://pris.ly/d/getting-started
+2. Set the provider of the datasource block in schema.prisma to match your database: postgresql, mysql, sqlite, sqlserver, mongodb or cockroachdb.
+3. Run prisma db pull to turn your database schema into a Prisma schema.
+4. Run prisma generate to generate the Prisma Client. You can then start querying your database.
+
+More information in our documentation:
+https://pris.ly/d/getting-started
+“migrate”: “npx prisma migrate dev”
+
+And run the command yarn migrate This will generate a Prisma client inside node_modules/.prisma/client , generate migration files and create appropriate tables in our prisma database
+
+
+docker run --name postgresql -e POSTGRES_USER=myusername -e POSTGRES_PASSWORD = mypassword -p 5432: 5432 -v /data:/var/lib/postgresql/data  postgres
+
+yarn add @prisma/client
+
+yarn migrate
+yarn migrate
+yarn run v1.22.19
+$ npx prisma migrate dev
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "mydb", schema "public" at "localhost:5432"
+
+PostgreSQL database mydb created at localhost:5432
+
+√ Enter a name for the new migration: ... postgre
+Applying migration `20231120123622_postgre`
+
+The following migration(s) have been created and applied from new schema changes:
+
+migrations/
+  └─ 20231120123622_postgre/
+    └─ migration.sql
+
+src/lib/prism-pg.js
+
+import { PrismaClient } from "@prisma/client";
+const globalForPrisma = global;
+export const prisma = globalForPrisma.prisma ||
+    new PrismaClient({
+        log: ["query"],
+    });
+
+src/app/user/route.js
+import { prisma } from "@/lib/prisma-pg";
+import { NextResponse } from "next/server";
+
+export async function GET(request) {
+    const user = await prisma.user.findMany({});
+    if (!user) {
+        return new NextResponse("No users");
+    }
+    return NextResponse.json(user);
+}
+
+............
+
+second database:
+
+Firstly we are creating a new folder for create a schema.prisma inside a different folder.
+
+db-app/prisma-sqlite
+schema.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../node_modules/@prisma-sqllite/prisma/client"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL_SQLLITE")
+}
+
+model Customer {
+    id        String   @id @default(uuid())
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+.env
+DATABASE_URL_PG="postgresql://myusername:mypassword@localhost:5432/mydb?schema=public"
+DATABASE_URL_SQLLITE="file:./dev.db"
+
+
+package.json
+
+"sqlite:dbpush": "npx prisma migrate dev --schema prisma-sqlite/schema.prisma"
+
+
+
+yarn sqlite:dbpush
+yarn run v1.22.19
+$ npx prisma migrate dev --schema prisma-sqlite/schema.prisma
+Environment variables loaded from .env
+Prisma schema loaded from prisma-sqlite\schema.prisma
+Datasource "db": SQLite database "dev.db" at "file:./dev.db"
+
+SQLite database dev.db created at file:./dev.db
+
+√ Enter a name for the new migration: ... sqlite
+Applying migration `20231120125515_sqlite`
+
+The following migration(s) have been created and applied from new schema changes:
+
+migrations/
+  └─ 20231120125515_sqlite/
+    └─ migration.sql
+
+Your database is now in sync with your schema.
+
+✔ Generated Prisma Client (v5.6.0) to .\node_modules\@prisma-sqllite\prisma\client in 71ms
+
+
+Done in 10.56s.
+
+
+src/app/lib/prisma-sqlite.js
+import { PrismaClient } from "@prisma-sqllite/prisma/client";
+const globalForPrisma_SQLITE = global;
+export const prismaSQLite = globalForPrisma_SQLITE.prisma ||
+    new PrismaClient({
+        log: ["query"],
+    });
+
+import { prisma } from "@/lib/prisma-pg";
+// import { prismaSQLite } from "@/lib/prisma-sqllite"
+import { NextResponse } from "next/server";
+
+export async function GET(request) {
+    // const user = await prismaSQLite.customer.findMany({});
+    const user = await prisma.user.findMany({})
+    if (!user) {
+
+        return new NextResponse("No users");
+    }
+    return NextResponse.json(user);
+}
+
